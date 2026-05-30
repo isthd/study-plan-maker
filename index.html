@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Study Plan Maker</title>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 20px;
+      line-height: 1.6;
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    label {
+      font-weight: bold;
+      display: block;
+      margin-top: 16px;
+    }
+
+    input, textarea, select, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 6px;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+
+    button {
+      margin-top: 20px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    #result {
+      margin-top: 30px;
+      padding: 20px;
+      border: 1px solid #ccc;
+      border-radius: 12px;
+      white-space: pre-wrap;
+      background: #f8f8f8;
+    }
+  </style>
+</head>
+<body>
+  <h1>Study Plan Maker</h1>
+
+  <p>
+    Create a simple study plan based on your subjects, available days, and target score.
+  </p>
+
+  <label for="subjects">Subjects</label>
+  <textarea id="subjects" rows="4" placeholder="Example: English, History, Science"></textarea>
+
+  <label for="days">Available study days</label>
+  <textarea id="days" rows="4" placeholder="Example: Monday, Tuesday, Thursday, Saturday"></textarea>
+
+  <label for="target">Target score</label>
+  <input id="target" type="text" placeholder="Example: 50 points or higher" />
+
+  <label for="difficulty">Difficulty level</label>
+  <select id="difficulty">
+    <option value="easy">Easy</option>
+    <option value="normal">Normal</option>
+    <option value="hard">Hard</option>
+  </select>
+
+  <button onclick="createPlan()">Create Study Plan</button>
+
+  <div id="result">Your study plan will appear here.</div>
+
+  <script>
+    function createPlan() {
+      const subjects = document.getElementById("subjects").value
+        .split(",")
+        .map(item => item.trim())
+        .filter(item => item.length > 0);
+
+      const days = document.getElementById("days").value
+        .split(",")
+        .map(item => item.trim())
+        .filter(item => item.length > 0);
+
+      const target = document.getElementById("target").value;
+      const difficulty = document.getElementById("difficulty").value;
+      const result = document.getElementById("result");
+
+      if (subjects.length === 0 || days.length === 0) {
+        result.textContent = "Please enter at least one subject and one study day.";
+        return;
+      }
+
+      let plan = "Study Plan\n\n";
+      plan += "Target: " + (target || "Not set") + "\n";
+      plan += "Difficulty: " + difficulty + "\n\n";
+
+      days.forEach((day, index) => {
+        const subject = subjects[index % subjects.length];
+        plan += day + ": Study " + subject + "\n";
+      });
+
+      plan += "\nTip: Start with the subject you feel least confident about.";
+
+      result.textContent = plan;
+    }
+  </script>
+</body>
+</html>
