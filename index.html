@@ -84,6 +84,14 @@
       color: #666;
       margin-top: 4px;
     }
+
+    .section-title {
+      margin-top: 28px;
+      padding-top: 16px;
+      border-top: 1px solid #eee;
+      font-size: 18px;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
@@ -92,16 +100,23 @@
     <p class="subtitle">テスト勉強の予定をかんたんに作るツール</p>
 
     <p>
-      科目、勉強できる日、目標点、難易度を入力すると、シンプルな勉強計画を自動で作れます。
+      科目、勉強できる日、勉強できない日、目標点、難易度を入力すると、
+      シンプルな勉強計画を自動で作れます。
     </p>
+
+    <div class="section-title">入力</div>
 
     <label for="subjects">科目</label>
     <textarea id="subjects" rows="4" placeholder="例: 英語, 歴史, 国語"></textarea>
-    <div class="hint">カンマ「,」または「、」で区切って入力してください。</div>
+    <div class="hint">カンマ「,」または「、」や改行で区切って入力してください。</div>
 
     <label for="days">勉強できる日</label>
-    <textarea id="days" rows="4" placeholder="例: 月曜日, 火曜日, 木曜日, 土曜日"></textarea>
-    <div class="hint">カンマ「,」または「、」で区切って入力してください。</div>
+    <textarea id="days" rows="4" placeholder="例: 月曜日, 火曜日, 木曜日, 金曜日, 土曜日"></textarea>
+    <div class="hint">カンマ「,」または「、」や改行で区切って入力してください。</div>
+
+    <label for="unavailableDays">勉強できない日</label>
+    <textarea id="unavailableDays" rows="3" placeholder="例: 金曜日, 日曜日, リハビリの日"></textarea>
+    <div class="hint">ここに書いた日は、勉強計画から外されます。</div>
 
     <label for="target">目標点</label>
     <input id="target" type="text" placeholder="例: 50点以上" />
@@ -129,6 +144,7 @@
     function createPlan() {
       const subjects = splitInput(document.getElementById("subjects").value);
       const days = splitInput(document.getElementById("days").value);
+      const unavailableDays = splitInput(document.getElementById("unavailableDays").value);
       const target = document.getElementById("target").value.trim();
       const difficulty = document.getElementById("difficulty").value;
       const result = document.getElementById("result");
@@ -138,11 +154,24 @@
         return;
       }
 
+      const availableDays = days.filter(day => !unavailableDays.includes(day));
+
+      if (availableDays.length === 0) {
+        result.textContent = "勉強できる日が残っていません。勉強できない日を減らすか、勉強できる日を追加してください。";
+        return;
+      }
+
       let plan = "勉強計画\n\n";
       plan += "目標: " + (target || "未設定") + "\n";
-      plan += "難易度: " + difficulty + "\n\n";
+      plan += "難易度: " + difficulty + "\n";
 
-      days.forEach((day, index) => {
+      if (unavailableDays.length > 0) {
+        plan += "除外した日: " + unavailableDays.join(", ") + "\n";
+      }
+
+      plan += "\n";
+
+      availableDays.forEach((day, index) => {
         const subject = subjects[index % subjects.length];
 
         if (difficulty === "やさしめ") {
@@ -154,7 +183,7 @@
         }
       });
 
-      plan += "\nコツ: まずは一番不安な科目から始めると、あとが楽になります。";
+      plan += "\nコツ: 勉強できない日を最初から外しておくと、無理のない計画になります。";
 
       result.textContent = plan;
     }
