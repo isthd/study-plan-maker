@@ -8,38 +8,141 @@
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
   <style>
-    body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      max-width: 900px;
-      margin: 40px auto;
-      padding: 20px;
-      line-height: 1.6;
-      background: #f5f5f5;
-      color: #222;
+    :root {
+      --bg: #f4f6fb;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --line: #e5e7eb;
+      --main: #2563eb;
+      --main-dark: #1d4ed8;
+      --soft: #eff6ff;
+      --danger-soft: #fef2f2;
+      --danger: #b91c1c;
+      --success-soft: #ecfdf5;
+      --success: #047857;
+      --shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+      --radius: 18px;
     }
 
-    .container {
-      background: white;
-      padding: 24px;
-      border-radius: 16px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at top left, #dbeafe 0, transparent 32%),
+        radial-gradient(circle at top right, #e0e7ff 0, transparent 30%),
+        var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+    }
+
+    .page {
+      width: min(1080px, 100%);
+      margin: 0 auto;
+      padding: 28px 16px 48px;
+    }
+
+    .hero {
+      padding: 34px 22px 26px;
+      text-align: center;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: var(--soft);
+      color: var(--main-dark);
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 14px;
     }
 
     h1 {
-      text-align: center;
-      margin-bottom: 8px;
+      margin: 0;
+      font-size: clamp(32px, 6vw, 54px);
+      letter-spacing: -0.04em;
+      line-height: 1.05;
     }
 
     .subtitle {
-      text-align: center;
-      color: #666;
-      margin-bottom: 24px;
+      max-width: 720px;
+      margin: 16px auto 0;
+      color: var(--muted);
+      font-size: 16px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 18px;
+    }
+
+    @media (min-width: 900px) {
+      .layout {
+        grid-template-columns: 1.08fr 0.92fr;
+        align-items: start;
+      }
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.92);
+      border: 1px solid rgba(229, 231, 235, 0.9);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 20px;
+      backdrop-filter: blur(10px);
+    }
+
+    .card + .card {
+      margin-top: 18px;
+    }
+
+    .card-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .card-title h2 {
+      margin: 0;
+      font-size: 20px;
+      letter-spacing: -0.02em;
+    }
+
+    .step {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: var(--soft);
+      color: var(--main-dark);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 14px;
+      flex: 0 0 auto;
+    }
+
+    .title-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
 
     label {
-      font-weight: bold;
       display: block;
-      margin-top: 16px;
+      margin-top: 14px;
+      font-weight: 800;
+      font-size: 14px;
     }
 
     input,
@@ -47,157 +150,389 @@
     select,
     button {
       width: 100%;
-      padding: 12px;
-      margin-top: 6px;
-      font-size: 16px;
-      box-sizing: border-box;
-      border: 1px solid #ccc;
-      border-radius: 10px;
+      margin-top: 7px;
+      padding: 12px 13px;
+      font: inherit;
+      border-radius: 14px;
+    }
+
+    input,
+    textarea,
+    select {
+      background: #fff;
+      border: 1px solid var(--line);
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+      border-color: var(--main);
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
     }
 
     textarea {
       resize: vertical;
-    }
-
-    button {
-      margin-top: 18px;
-      cursor: pointer;
-      font-weight: bold;
-      background: #222;
-      color: white;
-      border: none;
-    }
-
-    button:hover {
-      opacity: 0.9;
-    }
-
-    .secondary-button {
-      background: #555;
-    }
-
-    .section-title {
-      margin-top: 30px;
-      padding-top: 18px;
-      border-top: 1px solid #eee;
-      font-size: 18px;
-      font-weight: bold;
+      min-height: 84px;
     }
 
     .hint {
-      font-size: 14px;
-      color: #666;
-      margin-top: 4px;
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 13px;
     }
 
-    #result,
-    #ocrResult {
-      margin-top: 24px;
-      padding: 20px;
-      border: 1px solid #ddd;
-      border-radius: 12px;
-      white-space: pre-wrap;
-      background: #fafafa;
-      min-height: 120px;
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    @media (min-width: 640px) {
+      .grid-2 {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .button-row {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    @media (min-width: 640px) {
+      .button-row {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    button {
+      border: 0;
+      background: var(--main);
+      color: white;
+      cursor: pointer;
+      font-weight: 900;
+      transition: transform 0.12s, background 0.12s, opacity 0.12s;
+    }
+
+    button:hover {
+      background: var(--main-dark);
+      transform: translateY(-1px);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    .secondary {
+      background: #111827;
+    }
+
+    .secondary:hover {
+      background: #030712;
+    }
+
+    .ghost {
+      background: #eef2ff;
+      color: #3730a3;
+    }
+
+    .ghost:hover {
+      background: #e0e7ff;
     }
 
     .status {
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: #f9fafb;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .preview {
+      display: none;
       margin-top: 12px;
+      width: 100%;
+      max-height: 220px;
+      object-fit: contain;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: #f9fafb;
+    }
+
+    .result-box {
+      min-height: 220px;
+    }
+
+    .empty-result {
+      padding: 26px;
+      text-align: center;
+      color: var(--muted);
+      border: 1px dashed #cbd5e1;
+      border-radius: 16px;
+      background: #f8fafc;
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    @media (min-width: 640px) {
+      .summary {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    .summary-item {
+      padding: 12px;
+      background: #f8fafc;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+    }
+
+    .summary-label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .summary-value {
+      margin-top: 2px;
+      font-size: 15px;
+      font-weight: 900;
+    }
+
+    .plan-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .plan-card {
+      padding: 14px;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: #fff;
+    }
+
+    .plan-day {
+      font-weight: 900;
+      color: var(--main-dark);
+      margin-bottom: 4px;
+    }
+
+    .plan-task {
+      font-size: 15px;
+    }
+
+    .note {
+      margin-top: 14px;
+      padding: 13px;
+      border-radius: 16px;
+      background: var(--success-soft);
+      color: var(--success);
+      font-weight: 700;
       font-size: 14px;
-      color: #555;
+    }
+
+    .warning {
+      margin-top: 14px;
+      padding: 13px;
+      border-radius: 16px;
+      background: var(--danger-soft);
+      color: var(--danger);
+      font-weight: 700;
+      font-size: 14px;
     }
 
     .small {
+      margin-top: 14px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .footer {
+      margin-top: 26px;
+      text-align: center;
+      color: var(--muted);
       font-size: 13px;
-      color: #777;
     }
   </style>
 </head>
 
 <body>
-  <div class="container">
-    <h1>Study Plan Maker</h1>
-    <p class="subtitle">テスト勉強の予定をかんたんに作るツール</p>
+  <main class="page">
+    <section class="hero">
+      <div class="badge">v0.2.0 Design Preview</div>
+      <h1>Study Plan Maker</h1>
+      <p class="subtitle">
+        科目・予定・テスト範囲を入力して、無理のないテスト勉強計画を作るシンプルなWebアプリ。
+        カレンダー画像のOCRにも対応しています。
+      </p>
+    </section>
 
-    <p>
-      科目、勉強できる日、勉強できない日、予定メモ、テスト範囲をもとに、
-      シンプルな勉強計画を作ります。
-    </p>
+    <section class="layout">
+      <div>
+        <section class="card">
+          <div class="card-title">
+            <div class="title-left">
+              <span class="step">1</span>
+              <h2>基本入力</h2>
+            </div>
+          </div>
 
-    <div class="section-title">基本入力</div>
+          <label for="subjects">科目</label>
+          <textarea id="subjects" rows="4" placeholder="例: 英語, 歴史, 国語"></textarea>
+          <div class="hint">カンマ「,」・読点「、」・改行で区切れます。</div>
 
-    <label for="subjects">科目</label>
-    <textarea id="subjects" rows="4" placeholder="例: 英語, 歴史, 国語"></textarea>
-    <div class="hint">カンマ「,」または「、」や改行で区切って入力してください。</div>
+          <label for="days">勉強できる日</label>
+          <textarea id="days" rows="4" placeholder="例: 月曜日, 火曜日, 水曜日, 木曜日, 金曜日, 土曜日"></textarea>
+          <div class="hint">この中から、勉強できない日を自動で外します。</div>
 
-    <label for="days">勉強できる日</label>
-    <textarea id="days" rows="4" placeholder="例: 月曜日, 火曜日, 水曜日, 木曜日, 金曜日, 土曜日"></textarea>
-    <div class="hint">ここに入れた日の中から、勉強できない日を自動で外します。</div>
+          <label for="unavailableDays">勉強できない日</label>
+          <textarea id="unavailableDays" rows="3" placeholder="例: 金曜日, 日曜日, リハビリの日"></textarea>
+          <div class="hint">手動で除外したい日を入力します。</div>
 
-    <label for="unavailableDays">勉強できない日</label>
-    <textarea id="unavailableDays" rows="3" placeholder="例: 金曜日, 日曜日, リハビリの日"></textarea>
-    <div class="hint">手動で除外したい日を入力します。</div>
+          <div class="grid-2">
+            <div>
+              <label for="target">目標点</label>
+              <input id="target" type="text" placeholder="例: 50点以上" />
+            </div>
 
-    <label for="target">目標点</label>
-    <input id="target" type="text" placeholder="例: 50点以上" />
+            <div>
+              <label for="difficulty">全体の難易度</label>
+              <select id="difficulty">
+                <option value="やさしめ">やさしめ</option>
+                <option value="ふつう" selected>ふつう</option>
+                <option value="きつめ">きつめ</option>
+              </select>
+            </div>
+          </div>
+        </section>
 
-    <label for="difficulty">全体の難易度</label>
-    <select id="difficulty">
-      <option value="やさしめ">やさしめ</option>
-      <option value="ふつう">ふつう</option>
-      <option value="きつめ">きつめ</option>
-    </select>
+        <section class="card">
+          <div class="card-title">
+            <div class="title-left">
+              <span class="step">2</span>
+              <h2>OCRで予定を読み取る</h2>
+            </div>
+          </div>
 
-    <div class="section-title">OCR：カレンダー画像を読み取る</div>
+          <label for="imageInput">カレンダー・予定表のスクショ</label>
+          <input id="imageInput" type="file" accept="image/*" />
+          <img id="imagePreview" class="preview" alt="選択した画像のプレビュー" />
 
-    <label for="imageInput">カレンダーや予定表のスクショ</label>
-    <input id="imageInput" type="file" accept="image/*" />
+          <label for="ocrLanguage">OCR言語</label>
+          <select id="ocrLanguage">
+            <option value="jpn+eng">日本語 + 英語</option>
+            <option value="jpn">日本語</option>
+            <option value="eng">英語</option>
+          </select>
 
-    <label for="ocrLanguage">OCR言語</label>
-    <select id="ocrLanguage">
-      <option value="jpn+eng">日本語 + 英語</option>
-      <option value="jpn">日本語</option>
-      <option value="eng">英語</option>
-    </select>
+          <button onclick="runOCR()">画像から文字を読み取る</button>
+          <div id="ocrStatus" class="status">OCRはまだ実行されていません。</div>
 
-    <button onclick="runOCR()">画像から文字を読み取る</button>
-    <div id="ocrStatus" class="status">OCRはまだ実行されていません。</div>
+          <label for="ocrResult">OCR結果</label>
+          <textarea id="ocrResult" rows="7" placeholder="ここにOCRで読み取った文字が表示されます。必要なら手で修正してください。"></textarea>
 
-    <label for="ocrResult">OCR結果</label>
-    <textarea id="ocrResult" rows="8" placeholder="ここにOCRで読み取った文字が表示されます。手で修正してもOKです。"></textarea>
+          <button class="ghost" onclick="copyOcrToScheduleMemo()">OCR結果を予定メモに入れる</button>
+        </section>
 
-    <button class="secondary-button" onclick="copyOcrToScheduleMemo()">OCR結果を予定メモに入れる</button>
+        <section class="card">
+          <div class="card-title">
+            <div class="title-left">
+              <span class="step">3</span>
+              <h2>予定メモ・テスト範囲</h2>
+            </div>
+          </div>
 
-    <div class="section-title">予定メモ・テスト範囲</div>
-
-    <label for="scheduleMemo">予定メモ</label>
-    <textarea id="scheduleMemo" rows="5" placeholder="例:
+          <label for="scheduleMemo">予定メモ</label>
+          <textarea id="scheduleMemo" rows="5" placeholder="例:
 火曜日 リハビリ
 金曜日 休み
 土曜日 予定あり"></textarea>
-    <div class="hint">
-      「リハビリ」「予定」「休み」「忙しい」「病院」などがある曜日を、勉強できない日として自動推測します。
-    </div>
+          <div class="hint">「リハビリ」「予定」「休み」「忙しい」「病院」などがある曜日を自動で除外します。</div>
 
-    <label for="testRange">テスト範囲メモ</label>
-    <textarea id="testRange" rows="6" placeholder="例:
+          <label for="testRange">テスト範囲メモ</label>
+          <textarea id="testRange" rows="6" placeholder="例:
 英語: 不定詞、Unit 5
 歴史: 江戸時代
 国語: 漢字、本文読解"></textarea>
-    <div class="hint">
-      APIなしなので本物のAIではありませんが、科目名と範囲を読み取って計画に反映します。
+          <div class="hint">APIなしの簡易認識です。科目名と範囲が同じ行にあると反映しやすいです。</div>
+
+          <div class="button-row">
+            <button class="secondary" onclick="fillExample()">例を入れる</button>
+            <button onclick="createPlan()">勉強計画を作る</button>
+          </div>
+        </section>
+      </div>
+
+      <aside class="card result-box">
+        <div class="card-title">
+          <div class="title-left">
+            <span class="step">4</span>
+            <h2>作成された計画</h2>
+          </div>
+        </div>
+
+        <div id="result">
+          <div class="empty-result">
+            入力して「勉強計画を作る」を押すと、ここに計画が表示されます。
+          </div>
+        </div>
+
+        <p class="small">
+          OCRはブラウザ内で動く簡易版です。小さい文字や背景が複雑なスクショでは誤認識することがあります。
+        </p>
+      </aside>
+    </section>
+
+    <div class="footer">
+      Study Plan Maker — simple, open-source study planning tool.
     </div>
-
-    <button onclick="createPlan()">勉強計画を作る</button>
-
-    <div id="result">ここに勉強計画が表示されます。</div>
-
-    <p class="small">
-      注意: このOCRはブラウザ内で動く簡易版です。小さい文字や背景が複雑なスクショでは誤認識することがあります。
-    </p>
-  </div>
+  </main>
 
   <script>
+    const dayMap = {
+      "月": "月曜日",
+      "月曜": "月曜日",
+      "月曜日": "月曜日",
+      "火": "火曜日",
+      "火曜": "火曜日",
+      "火曜日": "火曜日",
+      "水": "水曜日",
+      "水曜": "水曜日",
+      "水曜日": "水曜日",
+      "木": "木曜日",
+      "木曜": "木曜日",
+      "木曜日": "木曜日",
+      "金": "金曜日",
+      "金曜": "金曜日",
+      "金曜日": "金曜日",
+      "土": "土曜日",
+      "土曜": "土曜日",
+      "土曜日": "土曜日",
+      "日": "日曜日",
+      "日曜": "日曜日",
+      "日曜日": "日曜日"
+    };
+
+    function escapeHTML(text) {
+      return String(text)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
     function splitInput(text) {
       return text
         .split(/[,、\n]/)
@@ -205,31 +540,33 @@
         .filter(item => item.length > 0);
     }
 
-    function normalizeDay(day) {
-      return day
-        .replace(/\s/g, "")
-        .replace("曜", "曜日")
-        .replace("月", "月曜日")
-        .replace("火", "火曜日")
-        .replace("水", "水曜日")
-        .replace("木", "木曜日")
-        .replace("金", "金曜日")
-        .replace("土", "土曜日")
-        .replace("日", "日曜日");
+    function canonicalDay(text) {
+      const cleaned = text.replace(/\s/g, "").replace("曜日", "曜日").replace("曜", "曜");
+      return dayMap[cleaned] || cleaned;
+    }
+
+    function extractDaysFromText(text) {
+      const found = new Set();
+      const patterns = [
+        ["月曜日", "月曜日"], ["月曜", "月曜日"], ["月", "月曜日"],
+        ["火曜日", "火曜日"], ["火曜", "火曜日"], ["火", "火曜日"],
+        ["水曜日", "水曜日"], ["水曜", "水曜日"], ["水", "水曜日"],
+        ["木曜日", "木曜日"], ["木曜", "木曜日"], ["木", "木曜日"],
+        ["金曜日", "金曜日"], ["金曜", "金曜日"], ["金", "金曜日"],
+        ["土曜日", "土曜日"], ["土曜", "土曜日"], ["土", "土曜日"],
+        ["日曜日", "日曜日"], ["日曜", "日曜日"], ["日", "日曜日"]
+      ];
+
+      patterns.forEach(([pattern, day]) => {
+        if (text.includes(pattern)) {
+          found.add(day);
+        }
+      });
+
+      return Array.from(found);
     }
 
     function extractUnavailableDaysFromMemo(text) {
-      const days = ["月曜日", "火曜日", "水曜日", "木曜日", "金曜日", "土曜日", "日曜日"];
-      const shortDays = {
-        "月": "月曜日",
-        "火": "火曜日",
-        "水": "水曜日",
-        "木": "木曜日",
-        "金": "金曜日",
-        "土": "土曜日",
-        "日": "日曜日"
-      };
-
       const busyWords = [
         "リハビリ",
         "予定",
@@ -251,23 +588,12 @@
       const lines = text.split(/\n/);
 
       lines.forEach(line => {
-        const hasBusyWord = busyWords.some(word =>
-          line.toLowerCase().includes(word.toLowerCase())
-        );
+        const lowerLine = line.toLowerCase();
+        const hasBusyWord = busyWords.some(word => lowerLine.includes(word.toLowerCase()));
 
         if (!hasBusyWord) return;
 
-        days.forEach(day => {
-          if (line.includes(day)) {
-            found.add(day);
-          }
-        });
-
-        Object.keys(shortDays).forEach(short => {
-          if (line.includes(short + "曜") || line.includes(short + "曜日")) {
-            found.add(shortDays[short]);
-          }
-        });
+        extractDaysFromText(line).forEach(day => found.add(day));
       });
 
       return Array.from(found);
@@ -275,7 +601,10 @@
 
     function extractTestTopics(testRangeText, subjects) {
       const topics = {};
-      const lines = testRangeText.split(/\n/).map(line => line.trim()).filter(Boolean);
+      const lines = testRangeText
+        .split(/\n/)
+        .map(line => line.trim())
+        .filter(Boolean);
 
       subjects.forEach(subject => {
         topics[subject] = [];
@@ -288,6 +617,7 @@
               .replace(subject, "")
               .replace(":", "")
               .replace("：", "")
+              .replace("-", "")
               .trim();
 
             if (cleaned.length > 0) {
@@ -299,6 +629,26 @@
 
       return topics;
     }
+
+    function getActionText(difficulty) {
+      if (difficulty === "やさしめ") return "を軽く復習する";
+      if (difficulty === "きつめ") return "を重点的に勉強する";
+      return "を勉強する";
+    }
+
+    document.getElementById("imageInput").addEventListener("change", event => {
+      const file = event.target.files[0];
+      const preview = document.getElementById("imagePreview");
+
+      if (!file) {
+        preview.style.display = "none";
+        preview.src = "";
+        return;
+      }
+
+      preview.src = URL.createObjectURL(file);
+      preview.style.display = "block";
+    });
 
     async function runOCR() {
       const imageInput = document.getElementById("imageInput");
@@ -349,89 +699,95 @@
         return;
       }
 
-      if (scheduleMemo.value.trim().length > 0) {
-        scheduleMemo.value += "\n" + ocrText;
-      } else {
-        scheduleMemo.value = ocrText;
-      }
+      scheduleMemo.value = scheduleMemo.value.trim()
+        ? scheduleMemo.value.trim() + "\n" + ocrText
+        : ocrText;
+    }
+
+    function fillExample() {
+      document.getElementById("subjects").value = "英語, 歴史, 国語";
+      document.getElementById("days").value = "月曜日, 火曜日, 水曜日, 木曜日, 金曜日, 土曜日";
+      document.getElementById("unavailableDays").value = "金曜日";
+      document.getElementById("target").value = "50点以上";
+      document.getElementById("difficulty").value = "ふつう";
+      document.getElementById("scheduleMemo").value = "火曜日 リハビリ\n土曜日 予定あり";
+      document.getElementById("testRange").value = "英語: 不定詞、Unit 5\n歴史: 江戸時代\n国語: 漢字、本文読解";
     }
 
     function createPlan() {
       const subjects = splitInput(document.getElementById("subjects").value);
-      const days = splitInput(document.getElementById("days").value);
-      const manualUnavailableDays = splitInput(document.getElementById("unavailableDays").value);
+      const rawDays = splitInput(document.getElementById("days").value);
+      const manualUnavailableDays = splitInput(document.getElementById("unavailableDays").value).map(canonicalDay);
       const scheduleMemo = document.getElementById("scheduleMemo").value;
       const testRange = document.getElementById("testRange").value;
       const target = document.getElementById("target").value.trim();
       const difficulty = document.getElementById("difficulty").value;
       const result = document.getElementById("result");
 
-      if (subjects.length === 0 || days.length === 0) {
-        result.textContent = "科目と勉強できる日を1つ以上入力してください。";
+      if (subjects.length === 0 || rawDays.length === 0) {
+        result.innerHTML = '<div class="warning">科目と勉強できる日を1つ以上入力してください。</div>';
         return;
       }
 
+      const days = rawDays.map(canonicalDay);
       const memoUnavailableDays = extractUnavailableDaysFromMemo(scheduleMemo);
       const allUnavailableDays = Array.from(new Set([
         ...manualUnavailableDays,
         ...memoUnavailableDays
       ]));
 
-      const availableDays = days.filter(day => {
-        return !allUnavailableDays.includes(day);
-      });
+      const availableDays = days.filter(day => !allUnavailableDays.includes(day));
 
       if (availableDays.length === 0) {
-        result.textContent = "勉強できる日が残っていません。勉強できない日を減らすか、勉強できる日を追加してください。";
+        result.innerHTML = '<div class="warning">勉強できる日が残っていません。勉強できない日を減らすか、勉強できる日を追加してください。</div>';
         return;
       }
 
       const topics = extractTestTopics(testRange, subjects);
+      const actionText = getActionText(difficulty);
 
-      let plan = "勉強計画\n\n";
-      plan += "目標: " + (target || "未設定") + "\n";
-      plan += "難易度: " + difficulty + "\n";
+      let html = "";
+
+      html += '<div class="summary">';
+      html += '<div class="summary-item"><div class="summary-label">目標</div><div class="summary-value">' + escapeHTML(target || "未設定") + '</div></div>';
+      html += '<div class="summary-item"><div class="summary-label">難易度</div><div class="summary-value">' + escapeHTML(difficulty) + '</div></div>';
+      html += '<div class="summary-item"><div class="summary-label">勉強日数</div><div class="summary-value">' + availableDays.length + '日</div></div>';
+      html += '</div>';
 
       if (allUnavailableDays.length > 0) {
-        plan += "除外した日: " + allUnavailableDays.join(", ") + "\n";
+        html += '<div class="note">除外した日: ' + escapeHTML(allUnavailableDays.join(", ")) + '</div>';
       }
 
-      plan += "\n";
+      html += '<div class="plan-list" style="margin-top: 14px;">';
 
       availableDays.forEach((day, index) => {
         const subject = subjects[index % subjects.length];
         const subjectTopics = topics[subject] || [];
-        let taskText = "";
+        const topic = subjectTopics.length > 0
+          ? "（" + subjectTopics[index % subjectTopics.length] + "）"
+          : "";
 
-        if (subjectTopics.length > 0) {
-          const topic = subjectTopics[index % subjectTopics.length];
-          taskText = subject + "（" + topic + "）";
-        } else {
-          taskText = subject;
-        }
+        const taskText = subject + topic + actionText;
 
-        if (difficulty === "やさしめ") {
-          plan += day + ": " + taskText + "を軽く復習する\n";
-        } else if (difficulty === "ふつう") {
-          plan += day + ": " + taskText + "を勉強する\n";
-        } else {
-          plan += day + ": " + taskText + "を重点的に勉強する\n";
-        }
+        html += '<div class="plan-card">';
+        html += '<div class="plan-day">' + escapeHTML(day) + '</div>';
+        html += '<div class="plan-task">' + escapeHTML(taskText) + '</div>';
+        html += '</div>';
       });
 
-      plan += "\n";
+      html += '</div>';
 
       if (testRange.trim().length > 0) {
-        plan += "テスト範囲メモをもとに、科目ごとの内容をできる範囲で反映しました。\n";
+        html += '<div class="note">テスト範囲メモをもとに、科目ごとの内容をできる範囲で反映しました。</div>';
       }
 
       if (scheduleMemo.trim().length > 0) {
-        plan += "予定メモから、忙しそうな曜日を自動で除外しました。\n";
+        html += '<div class="note">予定メモから、忙しそうな曜日を自動で除外しました。</div>';
       }
 
-      plan += "\nコツ: OCR結果は間違うことがあるので、計画を作る前に読み取り結果を少し直すと精度が上がります。";
+      html += '<p class="small">コツ: OCR結果は間違うことがあるので、計画を作る前に読み取り結果を少し直すと精度が上がります。</p>';
 
-      result.textContent = plan;
+      result.innerHTML = html;
     }
   </script>
 </body>
