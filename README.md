@@ -1,5 +1,9 @@
 # Study Plan Maker
+## Demo
 
+You can try the app here:
+
+https://isthd.github.io/study-plan-maker/
 Study Plan Maker is an open-source tool that helps students create a realistic study schedule based on test subjects, weak areas, available days, and rest days.
 
 ## Goal
