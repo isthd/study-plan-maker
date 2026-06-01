@@ -1,20 +1,36 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ja">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Study Plan Maker</title>
   <style>
     body {
-      font-family: system-ui, sans-serif;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       max-width: 800px;
       margin: 40px auto;
       padding: 20px;
       line-height: 1.6;
+      background: #f5f5f5;
+      color: #222;
+    }
+
+    .container {
+      background: white;
+      padding: 24px;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
     }
 
     h1 {
       text-align: center;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #666;
+      margin-bottom: 24px;
     }
 
     label {
@@ -23,88 +39,122 @@
       margin-top: 16px;
     }
 
-    input, textarea, select, button {
+    input,
+    textarea,
+    select,
+    button {
       width: 100%;
-      padding: 10px;
+      padding: 12px;
       margin-top: 6px;
       font-size: 16px;
       box-sizing: border-box;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+    }
+
+    textarea {
+      resize: vertical;
     }
 
     button {
-      margin-top: 20px;
+      margin-top: 24px;
       cursor: pointer;
       font-weight: bold;
+      background: #222;
+      color: white;
+      border: none;
+    }
+
+    button:hover {
+      opacity: 0.9;
     }
 
     #result {
       margin-top: 30px;
       padding: 20px;
-      border: 1px solid #ccc;
+      border: 1px solid #ddd;
       border-radius: 12px;
       white-space: pre-wrap;
-      background: #f8f8f8;
+      background: #fafafa;
+      min-height: 120px;
+    }
+
+    .hint {
+      font-size: 14px;
+      color: #666;
+      margin-top: 4px;
     }
   </style>
 </head>
 <body>
-  <h1>Study Plan Maker</h1>
+  <div class="container">
+    <h1>Study Plan Maker</h1>
+    <p class="subtitle">テスト勉強の予定をかんたんに作るツール</p>
 
-  <p>
-    Create a simple study plan based on your subjects, available days, and target score.
-  </p>
+    <p>
+      科目、勉強できる日、目標点、難易度を入力すると、シンプルな勉強計画を自動で作れます。
+    </p>
 
-  <label for="subjects">Subjects</label>
-  <textarea id="subjects" rows="4" placeholder="Example: English, History, Science"></textarea>
+    <label for="subjects">科目</label>
+    <textarea id="subjects" rows="4" placeholder="例: 英語, 歴史, 国語"></textarea>
+    <div class="hint">カンマ「,」または「、」で区切って入力してください。</div>
 
-  <label for="days">Available study days</label>
-  <textarea id="days" rows="4" placeholder="Example: Monday, Tuesday, Thursday, Saturday"></textarea>
+    <label for="days">勉強できる日</label>
+    <textarea id="days" rows="4" placeholder="例: 月曜日, 火曜日, 木曜日, 土曜日"></textarea>
+    <div class="hint">カンマ「,」または「、」で区切って入力してください。</div>
 
-  <label for="target">Target score</label>
-  <input id="target" type="text" placeholder="Example: 50 points or higher" />
+    <label for="target">目標点</label>
+    <input id="target" type="text" placeholder="例: 50点以上" />
 
-  <label for="difficulty">Difficulty level</label>
-  <select id="difficulty">
-    <option value="easy">Easy</option>
-    <option value="normal">Normal</option>
-    <option value="hard">Hard</option>
-  </select>
+    <label for="difficulty">全体の難易度</label>
+    <select id="difficulty">
+      <option value="やさしめ">やさしめ</option>
+      <option value="ふつう">ふつう</option>
+      <option value="きつめ">きつめ</option>
+    </select>
 
-  <button onclick="createPlan()">Create Study Plan</button>
+    <button onclick="createPlan()">勉強計画を作る</button>
 
-  <div id="result">Your study plan will appear here.</div>
+    <div id="result">ここに勉強計画が表示されます。</div>
+  </div>
 
   <script>
+    function splitInput(text) {
+      return text
+        .split(/[,、\n]/)
+        .map(item => item.trim())
+        .filter(item => item.length > 0);
+    }
+
     function createPlan() {
-      const subjects = document.getElementById("subjects").value
-        .split(",")
-        .map(item => item.trim())
-        .filter(item => item.length > 0);
-
-      const days = document.getElementById("days").value
-        .split(",")
-        .map(item => item.trim())
-        .filter(item => item.length > 0);
-
-      const target = document.getElementById("target").value;
+      const subjects = splitInput(document.getElementById("subjects").value);
+      const days = splitInput(document.getElementById("days").value);
+      const target = document.getElementById("target").value.trim();
       const difficulty = document.getElementById("difficulty").value;
       const result = document.getElementById("result");
 
       if (subjects.length === 0 || days.length === 0) {
-        result.textContent = "Please enter at least one subject and one study day.";
+        result.textContent = "科目と勉強できる日を1つ以上入力してください。";
         return;
       }
 
-      let plan = "Study Plan\n\n";
-      plan += "Target: " + (target || "Not set") + "\n";
-      plan += "Difficulty: " + difficulty + "\n\n";
+      let plan = "勉強計画\n\n";
+      plan += "目標: " + (target || "未設定") + "\n";
+      plan += "難易度: " + difficulty + "\n\n";
 
       days.forEach((day, index) => {
         const subject = subjects[index % subjects.length];
-        plan += day + ": Study " + subject + "\n";
+
+        if (difficulty === "やさしめ") {
+          plan += day + ": " + subject + "を軽く復習する\n";
+        } else if (difficulty === "ふつう") {
+          plan += day + ": " + subject + "を勉強する\n";
+        } else {
+          plan += day + ": " + subject + "を重点的に勉強する\n";
+        }
       });
 
-      plan += "\nTip: Start with the subject you feel least confident about.";
+      plan += "\nコツ: まずは一番不安な科目から始めると、あとが楽になります。";
 
       result.textContent = plan;
     }
