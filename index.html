@@ -4,10 +4,13 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Study Plan Maker</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
   <style>
     body {
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      max-width: 800px;
+      max-width: 900px;
       margin: 40px auto;
       padding: 20px;
       line-height: 1.6;
@@ -57,7 +60,7 @@
     }
 
     button {
-      margin-top: 24px;
+      margin-top: 18px;
       cursor: pointer;
       font-weight: bold;
       background: #222;
@@ -69,14 +72,16 @@
       opacity: 0.9;
     }
 
-    #result {
+    .secondary-button {
+      background: #555;
+    }
+
+    .section-title {
       margin-top: 30px;
-      padding: 20px;
-      border: 1px solid #ddd;
-      border-radius: 12px;
-      white-space: pre-wrap;
-      background: #fafafa;
-      min-height: 120px;
+      padding-top: 18px;
+      border-top: 1px solid #eee;
+      font-size: 18px;
+      font-weight: bold;
     }
 
     .hint {
@@ -85,38 +90,53 @@
       margin-top: 4px;
     }
 
-    .section-title {
-      margin-top: 28px;
-      padding-top: 16px;
-      border-top: 1px solid #eee;
-      font-size: 18px;
-      font-weight: bold;
+    #result,
+    #ocrResult {
+      margin-top: 24px;
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      white-space: pre-wrap;
+      background: #fafafa;
+      min-height: 120px;
+    }
+
+    .status {
+      margin-top: 12px;
+      font-size: 14px;
+      color: #555;
+    }
+
+    .small {
+      font-size: 13px;
+      color: #777;
     }
   </style>
 </head>
+
 <body>
   <div class="container">
     <h1>Study Plan Maker</h1>
     <p class="subtitle">テスト勉強の予定をかんたんに作るツール</p>
 
     <p>
-      科目、勉強できる日、勉強できない日、目標点、難易度を入力すると、
-      シンプルな勉強計画を自動で作れます。
+      科目、勉強できる日、勉強できない日、予定メモ、テスト範囲をもとに、
+      シンプルな勉強計画を作ります。
     </p>
 
-    <div class="section-title">入力</div>
+    <div class="section-title">基本入力</div>
 
     <label for="subjects">科目</label>
     <textarea id="subjects" rows="4" placeholder="例: 英語, 歴史, 国語"></textarea>
     <div class="hint">カンマ「,」または「、」や改行で区切って入力してください。</div>
 
     <label for="days">勉強できる日</label>
-    <textarea id="days" rows="4" placeholder="例: 月曜日, 火曜日, 木曜日, 金曜日, 土曜日"></textarea>
-    <div class="hint">カンマ「,」または「、」や改行で区切って入力してください。</div>
+    <textarea id="days" rows="4" placeholder="例: 月曜日, 火曜日, 水曜日, 木曜日, 金曜日, 土曜日"></textarea>
+    <div class="hint">ここに入れた日の中から、勉強できない日を自動で外します。</div>
 
     <label for="unavailableDays">勉強できない日</label>
     <textarea id="unavailableDays" rows="3" placeholder="例: 金曜日, 日曜日, リハビリの日"></textarea>
-    <div class="hint">ここに書いた日は、勉強計画から外されます。</div>
+    <div class="hint">手動で除外したい日を入力します。</div>
 
     <label for="target">目標点</label>
     <input id="target" type="text" placeholder="例: 50点以上" />
@@ -128,9 +148,53 @@
       <option value="きつめ">きつめ</option>
     </select>
 
+    <div class="section-title">OCR：カレンダー画像を読み取る</div>
+
+    <label for="imageInput">カレンダーや予定表のスクショ</label>
+    <input id="imageInput" type="file" accept="image/*" />
+
+    <label for="ocrLanguage">OCR言語</label>
+    <select id="ocrLanguage">
+      <option value="jpn+eng">日本語 + 英語</option>
+      <option value="jpn">日本語</option>
+      <option value="eng">英語</option>
+    </select>
+
+    <button onclick="runOCR()">画像から文字を読み取る</button>
+    <div id="ocrStatus" class="status">OCRはまだ実行されていません。</div>
+
+    <label for="ocrResult">OCR結果</label>
+    <textarea id="ocrResult" rows="8" placeholder="ここにOCRで読み取った文字が表示されます。手で修正してもOKです。"></textarea>
+
+    <button class="secondary-button" onclick="copyOcrToScheduleMemo()">OCR結果を予定メモに入れる</button>
+
+    <div class="section-title">予定メモ・テスト範囲</div>
+
+    <label for="scheduleMemo">予定メモ</label>
+    <textarea id="scheduleMemo" rows="5" placeholder="例:
+火曜日 リハビリ
+金曜日 休み
+土曜日 予定あり"></textarea>
+    <div class="hint">
+      「リハビリ」「予定」「休み」「忙しい」「病院」などがある曜日を、勉強できない日として自動推測します。
+    </div>
+
+    <label for="testRange">テスト範囲メモ</label>
+    <textarea id="testRange" rows="6" placeholder="例:
+英語: 不定詞、Unit 5
+歴史: 江戸時代
+国語: 漢字、本文読解"></textarea>
+    <div class="hint">
+      APIなしなので本物のAIではありませんが、科目名と範囲を読み取って計画に反映します。
+    </div>
+
     <button onclick="createPlan()">勉強計画を作る</button>
 
     <div id="result">ここに勉強計画が表示されます。</div>
+
+    <p class="small">
+      注意: このOCRはブラウザ内で動く簡易版です。小さい文字や背景が複雑なスクショでは誤認識することがあります。
+    </p>
   </div>
 
   <script>
@@ -141,10 +205,163 @@
         .filter(item => item.length > 0);
     }
 
+    function normalizeDay(day) {
+      return day
+        .replace(/\s/g, "")
+        .replace("曜", "曜日")
+        .replace("月", "月曜日")
+        .replace("火", "火曜日")
+        .replace("水", "水曜日")
+        .replace("木", "木曜日")
+        .replace("金", "金曜日")
+        .replace("土", "土曜日")
+        .replace("日", "日曜日");
+    }
+
+    function extractUnavailableDaysFromMemo(text) {
+      const days = ["月曜日", "火曜日", "水曜日", "木曜日", "金曜日", "土曜日", "日曜日"];
+      const shortDays = {
+        "月": "月曜日",
+        "火": "火曜日",
+        "水": "水曜日",
+        "木": "木曜日",
+        "金": "金曜日",
+        "土": "土曜日",
+        "日": "日曜日"
+      };
+
+      const busyWords = [
+        "リハビリ",
+        "予定",
+        "休み",
+        "忙しい",
+        "病院",
+        "通院",
+        "放課後デイ",
+        "用事",
+        "外出",
+        "不可",
+        "無理",
+        "busy",
+        "rehab",
+        "hospital"
+      ];
+
+      const found = new Set();
+      const lines = text.split(/\n/);
+
+      lines.forEach(line => {
+        const hasBusyWord = busyWords.some(word =>
+          line.toLowerCase().includes(word.toLowerCase())
+        );
+
+        if (!hasBusyWord) return;
+
+        days.forEach(day => {
+          if (line.includes(day)) {
+            found.add(day);
+          }
+        });
+
+        Object.keys(shortDays).forEach(short => {
+          if (line.includes(short + "曜") || line.includes(short + "曜日")) {
+            found.add(shortDays[short]);
+          }
+        });
+      });
+
+      return Array.from(found);
+    }
+
+    function extractTestTopics(testRangeText, subjects) {
+      const topics = {};
+      const lines = testRangeText.split(/\n/).map(line => line.trim()).filter(Boolean);
+
+      subjects.forEach(subject => {
+        topics[subject] = [];
+      });
+
+      lines.forEach(line => {
+        subjects.forEach(subject => {
+          if (line.includes(subject)) {
+            const cleaned = line
+              .replace(subject, "")
+              .replace(":", "")
+              .replace("：", "")
+              .trim();
+
+            if (cleaned.length > 0) {
+              topics[subject].push(cleaned);
+            }
+          }
+        });
+      });
+
+      return topics;
+    }
+
+    async function runOCR() {
+      const imageInput = document.getElementById("imageInput");
+      const ocrLanguage = document.getElementById("ocrLanguage").value;
+      const ocrStatus = document.getElementById("ocrStatus");
+      const ocrResult = document.getElementById("ocrResult");
+
+      if (!imageInput.files || imageInput.files.length === 0) {
+        ocrStatus.textContent = "画像を選択してください。";
+        return;
+      }
+
+      const imageFile = imageInput.files[0];
+
+      ocrStatus.textContent = "OCRを準備しています。少し時間がかかります。";
+      ocrResult.value = "";
+
+      try {
+        const result = await Tesseract.recognize(
+          imageFile,
+          ocrLanguage,
+          {
+            logger: message => {
+              if (message.status === "recognizing text") {
+                const progress = Math.round(message.progress * 100);
+                ocrStatus.textContent = "文字を読み取り中... " + progress + "%";
+              } else {
+                ocrStatus.textContent = "処理中: " + message.status;
+              }
+            }
+          }
+        );
+
+        ocrResult.value = result.data.text.trim();
+        ocrStatus.textContent = "OCRが完了しました。必要なら読み取り結果を手で直してください。";
+      } catch (error) {
+        ocrStatus.textContent = "OCRに失敗しました。画像を変えるか、文字を手入力してください。";
+        console.error(error);
+      }
+    }
+
+    function copyOcrToScheduleMemo() {
+      const ocrText = document.getElementById("ocrResult").value.trim();
+      const scheduleMemo = document.getElementById("scheduleMemo");
+
+      if (!ocrText) {
+        alert("OCR結果が空です。先に画像を読み取るか、OCR結果欄に文字を入力してください。");
+        return;
+      }
+
+      if (scheduleMemo.value.trim().length > 0) {
+        scheduleMemo.value += "\n" + ocrText;
+      } else {
+        scheduleMemo.value = ocrText;
+      }
+    }
+
     function createPlan() {
       const subjects = splitInput(document.getElementById("subjects").value);
       const days = splitInput(document.getElementById("days").value);
-      const unavailableDays = splitInput(document.getElementById("unavailableDays").value);
+      const manualUnavailableDays = splitInput(document.getElementById("unavailableDays").value);
+      const scheduleMemo = document.getElementById("scheduleMemo").value;
+      const testRange = document.getElementById("testRange").value;
       const target = document.getElementById("target").value.trim();
       const difficulty = document.getElementById("difficulty").value;
       const result = document.getElementById("result");
@@ -154,36 +371,65 @@
         return;
       }
 
-      const availableDays = days.filter(day => !unavailableDays.includes(day));
+      const memoUnavailableDays = extractUnavailableDaysFromMemo(scheduleMemo);
+      const allUnavailableDays = Array.from(new Set([
+        ...manualUnavailableDays,
+        ...memoUnavailableDays
+      ]));
+
+      const availableDays = days.filter(day => {
+        return !allUnavailableDays.includes(day);
+      });
 
       if (availableDays.length === 0) {
         result.textContent = "勉強できる日が残っていません。勉強できない日を減らすか、勉強できる日を追加してください。";
         return;
       }
 
+      const topics = extractTestTopics(testRange, subjects);
+
       let plan = "勉強計画\n\n";
       plan += "目標: " + (target || "未設定") + "\n";
       plan += "難易度: " + difficulty + "\n";
 
-      if (unavailableDays.length > 0) {
-        plan += "除外した日: " + unavailableDays.join(", ") + "\n";
+      if (allUnavailableDays.length > 0) {
+        plan += "除外した日: " + allUnavailableDays.join(", ") + "\n";
       }
 
       plan += "\n";
 
       availableDays.forEach((day, index) => {
         const subject = subjects[index % subjects.length];
+        const subjectTopics = topics[subject] || [];
+        let taskText = "";
+
+        if (subjectTopics.length > 0) {
+          const topic = subjectTopics[index % subjectTopics.length];
+          taskText = subject + "（" + topic + "）";
+        } else {
+          taskText = subject;
+        }
 
         if (difficulty === "やさしめ") {
-          plan += day + ": " + subject + "を軽く復習する\n";
+          plan += day + ": " + taskText + "を軽く復習する\n";
         } else if (difficulty === "ふつう") {
-          plan += day + ": " + subject + "を勉強する\n";
+          plan += day + ": " + taskText + "を勉強する\n";
         } else {
-          plan += day + ": " + subject + "を重点的に勉強する\n";
+          plan += day + ": " + taskText + "を重点的に勉強する\n";
         }
       });
 
-      plan += "\nコツ: 勉強できない日を最初から外しておくと、無理のない計画になります。";
+      plan += "\n";
+
+      if (testRange.trim().length > 0) {
+        plan += "テスト範囲メモをもとに、科目ごとの内容をできる範囲で反映しました。\n";
+      }
+
+      if (scheduleMemo.trim().length > 0) {
+        plan += "予定メモから、忙しそうな曜日を自動で除外しました。\n";
+      }
+
+      plan += "\nコツ: OCR結果は間違うことがあるので、計画を作る前に読み取り結果を少し直すと精度が上がります。";
 
       result.textContent = plan;
     }
