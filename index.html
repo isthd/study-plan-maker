@@ -244,6 +244,73 @@
       background: #e0e7ff;
     }
 
+    .subject-difficulty-block {
+      margin-top: 14px;
+      padding: 13px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: #f8fafc;
+    }
+
+    .subject-difficulty-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .subject-difficulty-header label {
+      margin-top: 0;
+    }
+
+    .difficulty-legend {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .subject-difficulty-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .subject-difficulty-row {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+      align-items: center;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: #fff;
+    }
+
+    @media (min-width: 520px) {
+      .subject-difficulty-row {
+        grid-template-columns: minmax(120px, 1fr) minmax(160px, 0.8fr);
+      }
+    }
+
+    .subject-name {
+      font-weight: 900;
+      overflow-wrap: anywhere;
+    }
+
+    .subject-difficulty-row select {
+      margin-top: 0;
+    }
+
+    .empty-difficulty {
+      color: var(--muted);
+      font-size: 13px;
+      padding: 10px;
+      border: 1px dashed #cbd5e1;
+      border-radius: 14px;
+      background: #fff;
+    }
+
     .status {
       margin-top: 10px;
       padding: 10px 12px;
@@ -390,7 +457,17 @@
 
           <label for="subjects">科目</label>
           <textarea id="subjects" rows="4" placeholder="例: 英語, 歴史, 国語"></textarea>
-          <div class="hint">カンマ「,」・読点「、」・改行で区切れます。</div>
+          <div class="hint">カンマ「,」・読点「、」・改行で区切れます。入力すると下に科目ごとの苦手度が表示されます。</div>
+
+          <div class="subject-difficulty-block">
+            <div class="subject-difficulty-header">
+              <label>科目ごとの苦手度</label>
+              <span class="difficulty-legend">やさしい: 少なめ / ふつう: 標準 / 苦手: 多め</span>
+            </div>
+            <div id="subjectDifficultyList" class="subject-difficulty-list">
+              <div class="empty-difficulty">科目を入力すると、ここで苦手度を選べます。</div>
+            </div>
+          </div>
 
           <label for="days">勉強できる日</label>
           <textarea id="days" rows="4" placeholder="例: 月曜日, 火曜日, 水曜日, 木曜日, 金曜日, 土曜日"></textarea>
@@ -540,6 +617,79 @@
         .filter(item => item.length > 0);
     }
 
+    function getUniqueSubjects() {
+      return Array.from(new Set(splitInput(document.getElementById("subjects").value)));
+    }
+
+    function subjectKey(subject) {
+      return "subject-difficulty-" + encodeURIComponent(subject);
+    }
+
+    function renderSubjectDifficultyInputs() {
+      const subjects = getUniqueSubjects();
+      const list = document.getElementById("subjectDifficultyList");
+      const previousValues = {};
+
+      list.querySelectorAll("select[data-subject]").forEach(select => {
+        previousValues[select.dataset.subject] = select.value;
+      });
+
+      if (subjects.length === 0) {
+        list.innerHTML = '<div class="empty-difficulty">科目を入力すると、ここで苦手度を選べます。</div>';
+        return;
+      }
+
+      list.innerHTML = subjects.map(subject => {
+        const selected = previousValues[subject] || "ふつう";
+        const options = ["やさしい", "ふつう", "苦手"].map(level => {
+          const selectedAttribute = level === selected ? " selected" : "";
+          return '<option value="' + escapeHTML(level) + '"' + selectedAttribute + '>' + escapeHTML(level) + '</option>';
+        }).join("");
+
+        return ''
+          + '<div class="subject-difficulty-row">'
+          + '<div class="subject-name">' + escapeHTML(subject) + '</div>'
+          + '<select id="' + subjectKey(subject) + '" data-subject="' + escapeHTML(subject) + '" aria-label="' + escapeHTML(subject) + 'の苦手度">'
+          + options
+          + '</select>'
+          + '</div>';
+      }).join("");
+    }
+
+    function getSubjectDifficulties(subjects) {
+      const selectBySubject = {};
+      const difficulties = {};
+
+      document.querySelectorAll("select[data-subject]").forEach(select => {
+        selectBySubject[select.dataset.subject] = select.value;
+      });
+
+      subjects.forEach(subject => {
+        difficulties[subject] = selectBySubject[subject] || "ふつう";
+      });
+
+      return difficulties;
+    }
+
+    function buildWeightedSubjects(subjects, difficulties) {
+      const weights = {
+        "やさしい": 1,
+        "ふつう": 2,
+        "苦手": 3
+      };
+
+      return subjects.flatMap(subject => {
+        const weight = weights[difficulties[subject]] || weights["ふつう"];
+        return Array.from({ length: weight }, () => subject);
+      });
+    }
+
+    function formatSubjectDifficultySummary(difficulties) {
+      return Object.entries(difficulties)
+        .map(([subject, level]) => subject + ": " + level)
+        .join(" / ");
+    }
+
     function canonicalDay(text) {
       const cleaned = text.replace(/\s/g, "").replace("曜日", "曜日").replace("曜", "曜");
       return dayMap[cleaned] || cleaned;
@@ -636,6 +786,9 @@
       return "を勉強する";
     }
 
+    document.getElementById("subjects").addEventListener("input", renderSubjectDifficultyInputs);
+    renderSubjectDifficultyInputs();
+
     document.getElementById("imageInput").addEventListener("change", event => {
       const file = event.target.files[0];
       const preview = document.getElementById("imagePreview");
@@ -712,6 +865,10 @@
       document.getElementById("difficulty").value = "ふつう";
       document.getElementById("scheduleMemo").value = "火曜日 リハビリ\n土曜日 予定あり";
       document.getElementById("testRange").value = "英語: 不定詞、Unit 5\n歴史: 江戸時代\n国語: 漢字、本文読解";
+      renderSubjectDifficultyInputs();
+      document.getElementById(subjectKey("英語")).value = "苦手";
+      document.getElementById(subjectKey("歴史")).value = "ふつう";
+      document.getElementById(subjectKey("国語")).value = "やさしい";
     }
 
     function createPlan() {
@@ -744,6 +901,8 @@
       }
 
       const topics = extractTestTopics(testRange, subjects);
+      const subjectDifficulties = getSubjectDifficulties(subjects);
+      const weightedSubjects = buildWeightedSubjects(subjects, subjectDifficulties);
       const actionText = getActionText(difficulty);
 
       let html = "";
@@ -753,6 +912,7 @@
       html += '<div class="summary-item"><div class="summary-label">難易度</div><div class="summary-value">' + escapeHTML(difficulty) + '</div></div>';
       html += '<div class="summary-item"><div class="summary-label">勉強日数</div><div class="summary-value">' + availableDays.length + '日</div></div>';
       html += '</div>';
+      html += '<div class="note">科目ごとの苦手度: ' + escapeHTML(formatSubjectDifficultySummary(subjectDifficulties)) + '</div>';
 
       if (allUnavailableDays.length > 0) {
         html += '<div class="note">除外した日: ' + escapeHTML(allUnavailableDays.join(", ")) + '</div>';
@@ -761,7 +921,7 @@
       html += '<div class="plan-list" style="margin-top: 14px;">';
 
       availableDays.forEach((day, index) => {
-        const subject = subjects[index % subjects.length];
+        const subject = weightedSubjects[index % weightedSubjects.length];
         const subjectTopics = topics[subject] || [];
         const topic = subjectTopics.length > 0
           ? "（" + subjectTopics[index % subjectTopics.length] + "）"
