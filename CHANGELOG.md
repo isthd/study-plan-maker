@@ -1,6 +1,20 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+## [0.30] - 2026-06-02
+
+### Added
+- Added per-subject difficulty settings.
+- Added three subject difficulty levels: easy, normal, and weak.
+- Added weighted study plan assignment so weak subjects appear more often.
+- Added subject difficulty examples to the example input button.
+- Added a subject difficulty summary to generated plans.
+- Added improved per-subject topic reflection from test range memos.
+
+### Changed
+- Updated the design preview badge to v0.30.
+- Improved the subject difficulty settings layout for small screens.
+
 ## [0.2.0] - 2026-06-01
 
 ### Added
