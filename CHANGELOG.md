@@ -12,7 +12,8 @@ All notable changes to this project will be documented in this file.
 - Added improved per-subject topic reflection from test range memos.
 
 ### Changed
-- Updated the design preview badge to v0.30.
+- Updated the hero badge to announce the v0.30 update release.
+- Added an in-app v0.30 release note explaining the subject difficulty update.
 - Improved the subject difficulty settings layout for small screens.
 
 ## [0.2.0] - 2026-06-01
