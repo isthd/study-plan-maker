@@ -78,6 +78,18 @@
       font-size: 16px;
     }
 
+    .release-note {
+      max-width: 720px;
+      margin: 18px auto 0;
+      padding: 12px 14px;
+      border: 1px solid rgba(37, 99, 235, 0.2);
+      border-radius: 16px;
+      background: rgba(239, 246, 255, 0.82);
+      color: var(--main-dark);
+      font-size: 14px;
+      font-weight: 650;
+    }
+
     .layout {
       display: grid;
       grid-template-columns: 1fr;
@@ -437,12 +449,15 @@
 <body>
   <main class="page">
     <section class="hero">
-      <div class="badge">v0.30 Design Preview</div>
+      <div class="badge">v0.30 Update Release</div>
       <h1>Study Plan Maker</h1>
       <p class="subtitle">
         科目・予定・テスト範囲を入力して、無理のないテスト勉強計画を作るシンプルなWebアプリ。
         カレンダー画像のOCRにも対応しています。
       </p>
+      <div class="release-note">
+        <strong>v0.30 リリース:</strong> 科目ごとの苦手度設定と、苦手科目を多めに反映する計画作成に対応しました。
+      </div>
     </section>
 
     <section class="layout">
