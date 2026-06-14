@@ -411,6 +411,63 @@
       font-size: 15px;
     }
 
+    .calendar-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .calendar-toolbar button {
+      width: auto;
+      margin-top: 0;
+      padding: 8px 12px;
+      font-size: 13px;
+    }
+
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+
+    @media (min-width: 640px) {
+      .calendar-grid {
+        grid-template-columns: repeat(7, 1fr);
+      }
+    }
+
+    .calendar-day {
+      min-height: 106px;
+      padding: 9px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: #f8fafc;
+    }
+
+    .calendar-day-name {
+      color: var(--main-dark);
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .calendar-task {
+      margin-top: 7px;
+      padding: 7px;
+      border-radius: 9px;
+      background: var(--soft);
+      color: #1e3a8a;
+      font-size: 11px;
+      font-weight: 700;
+      line-height: 1.45;
+      overflow-wrap: anywhere;
+    }
+
+    .save-plan {
+      margin-top: 14px;
+    }
+
     .note {
       margin-top: 14px;
       padding: 13px;
@@ -583,6 +640,15 @@
         <p class="small">
           OCRはブラウザ内で動く簡易版です。小さい文字や背景が複雑なスクショでは誤認識することがあります。
         </p>
+
+        <section style="margin-top: 22px;">
+          <div class="calendar-toolbar">
+            <h2 style="margin: 0; font-size: 20px;">サイト内カレンダー</h2>
+            <button class="ghost" onclick="clearCalendar()">記録を消す</button>
+          </div>
+          <div id="calendarStatus" class="hint">作成した計画を記録すると、次回アクセス時にも表示されます。</div>
+          <div id="studyCalendar" class="calendar-grid" style="margin-top: 12px;"></div>
+        </section>
       </aside>
     </section>
 
@@ -592,6 +658,9 @@
   </main>
 
   <script>
+    const calendarStorageKey = "study-plan-maker-calendar";
+    let latestPlan = [];
+
     const dayMap = {
       "月": "月曜日",
       "月曜": "月曜日",
@@ -801,6 +870,49 @@
       return "を勉強する";
     }
 
+    function loadCalendarPlan() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(calendarStorageKey) || "[]");
+        return Array.isArray(saved) ? saved : [];
+      } catch (error) {
+        console.error(error);
+        return [];
+      }
+    }
+
+    function renderCalendar() {
+      const savedPlan = loadCalendarPlan();
+      const calendar = document.getElementById("studyCalendar");
+      const days = ["月曜日", "火曜日", "水曜日", "木曜日", "金曜日", "土曜日", "日曜日"];
+
+      calendar.innerHTML = days.map(day => {
+        const tasks = savedPlan
+          .filter(item => item.day === day)
+          .map(item => '<div class="calendar-task">' + escapeHTML(item.task) + '</div>')
+          .join("");
+
+        return '<div class="calendar-day"><div class="calendar-day-name">'
+          + day + '</div>' + (tasks || '<div class="hint">予定なし</div>') + '</div>';
+      }).join("");
+    }
+
+    function savePlanToCalendar() {
+      if (latestPlan.length === 0) {
+        document.getElementById("calendarStatus").textContent = "先に勉強計画を作ってください。";
+        return;
+      }
+
+      localStorage.setItem(calendarStorageKey, JSON.stringify(latestPlan));
+      document.getElementById("calendarStatus").textContent = "作成した計画をカレンダーに記録しました。";
+      renderCalendar();
+    }
+
+    function clearCalendar() {
+      localStorage.removeItem(calendarStorageKey);
+      document.getElementById("calendarStatus").textContent = "カレンダーの記録を消しました。";
+      renderCalendar();
+    }
+
     document.getElementById("subjects").addEventListener("input", renderSubjectDifficultyInputs);
     renderSubjectDifficultyInputs();
 
@@ -887,6 +999,7 @@
     }
 
     function createPlan() {
+      latestPlan = [];
       const subjects = splitInput(document.getElementById("subjects").value);
       const rawDays = splitInput(document.getElementById("days").value);
       const manualUnavailableDays = splitInput(document.getElementById("unavailableDays").value).map(canonicalDay);
@@ -943,6 +1056,7 @@
           : "";
 
         const taskText = subject + topic + actionText;
+        latestPlan.push({ day, task: taskText });
 
         html += '<div class="plan-card">';
         html += '<div class="plan-day">' + escapeHTML(day) + '</div>';
@@ -951,6 +1065,7 @@
       });
 
       html += '</div>';
+      html += '<button class="save-plan" onclick="savePlanToCalendar()">この計画をカレンダーに記録する</button>';
 
       if (testRange.trim().length > 0) {
         html += '<div class="note">テスト範囲メモをもとに、科目ごとの内容をできる範囲で反映しました。</div>';
@@ -964,6 +1079,8 @@
 
       result.innerHTML = html;
     }
+
+    renderCalendar();
   </script>
 </body>
 </html>
